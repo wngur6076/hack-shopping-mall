@@ -17,7 +17,7 @@ class Product extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class);
+        return $this->belongsToMany(Order::class, 'codes');
     }
 
     public function hasOrderFor($customerEmail)
@@ -37,6 +37,13 @@ class Product extends Model
 
     public function orderCodes($email, $shoppingCart)
     {
+        $codes = $this->findCodes($shoppingCart);
+
+        return $this->createOrder($email, $codes);
+    }
+
+    public function findCodes($shoppingCart)
+    {
         foreach ($shoppingCart as $item) {
             if ($this->findCodeFor($item['period'])->count() < $item['quantity']) {
                 throw new NotEnoughCodesException;
@@ -46,21 +53,22 @@ class Product extends Model
                 ->take($item['quantity'])->get();
         }
 
+        return $codes;
+    }
+
+    public function totalCost($codes)
+    {
         $amount = 0;
         foreach ($codes as $code) {
             $amount += $code->sum('price');
         }
 
-        $order = $this->orders()->create([
-            'email' => $email,
-            'amount' => $amount
-        ]);
+        return $amount;
+    }
 
-        foreach ($codes as $code) {
-            $order->codes()->saveMany($code);
-        }
-
-        return $order;
+    public function createOrder($email, $codes)
+    {
+        return Order::forTickets($codes, $email, $this->totalCost($codes));
     }
 
     public function addCodes($codes)
