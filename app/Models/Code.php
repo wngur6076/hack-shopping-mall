@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Code extends Model
 {
@@ -13,7 +14,12 @@ class Code extends Model
 
     public function scopeAvailable($query)
     {
-        return $query->whereNull('order_id');
+        return $query->whereNull('order_id')->whereNull('reserved_at');
+    }
+
+    public function reserve()
+    {
+        $this->update(['reserved_at' => Carbon::now()]);
     }
 
     public function scopePeriod($query, $period)
@@ -26,4 +32,8 @@ class Code extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function release()
+    {
+        $this->update(['reserved_at' => null]);
+    }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Billing\PaymentGateway;
+use App\Http\Resources\OrderResource;
 use App\Billing\PaymentFailedException;
 use App\Exceptions\NotEnoughCodesException;
 
@@ -23,13 +23,13 @@ class ProductsOrdersController extends Controller
         $this->vadateRequest();
 
         try {
-            $codes = $product->findCodes(request('shopping_cart'));
-
-            $this->paymentGateway->charge($product->totalCost($codes), request('payment_token'), request('email'));
-
-            $order = Order::forTickets($codes, request('email'), $product->totalCost($codes));
-            return response()->json([], 201);
+            // 코드 예약을 한다.
+            $reservation = $product->reserveCodes(request('shopping_cart'), request('email'));
+            // 해당 코드들에 대한 주문 생성 및 비용청구
+            $order = $reservation->complete($this->paymentGateway, request('payment_token'));
+            return response()->json(new OrderResource($order), 201);
         } catch (PaymentFailedException $e) {
+            $reservation->cancel();
             return response()->json([], 422);
         } catch (NotEnoughCodesException $e) {
             return response()->json([], 422);

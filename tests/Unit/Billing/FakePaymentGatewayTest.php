@@ -53,4 +53,22 @@ class FakePaymentGatewayTest extends TestCase
         }
         $this->fail("The PaymentFailedException was not thrown even if the buyer ran out of money.");
     }
+
+    /** @test */
+    function running_a_hook_before_the_first_charge()
+    {
+        User::factory()->create(['email' => 'john@example.com', 'money' => 5000]);
+        $paymentGateway = new FakePaymentGateway;
+        $timesCallbackRan = 0;
+
+        $paymentGateway->beforeFirstCharge(function ($paymentGateway) use (&$timesCallbackRan) {
+            $paymentGateway->charge(2500, $paymentGateway->getValidTestToken(), 'john@example.com');
+            $timesCallbackRan++;
+            $this->assertEquals(2500, $paymentGateway->totalCharges());
+        });
+
+        $paymentGateway->charge(2500, $paymentGateway->getValidTestToken(), 'john@example.com');
+        $this->assertEquals(1, $timesCallbackRan);
+        $this->assertEquals(5000, $paymentGateway->totalCharges());
+    }
 }

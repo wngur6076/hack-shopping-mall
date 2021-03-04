@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use App\Models\Reservation;
 use Illuminate\Database\Eloquent\Model;
 use App\Exceptions\NotEnoughCodesException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +42,19 @@ class Product extends Model
         $codes = $this->findCodes($shoppingCart);
 
         return $this->createOrder($email, $codes);
+    }
+
+    public function reserveCodes($shoppingCart, $email)
+    {
+        $codes = $this->findCodes($shoppingCart);
+
+        foreach ($codes as $code) {
+            foreach ($code as $item) {
+                $item->reserve();
+            }
+        }
+
+        return new Reservation($codes, $email);
     }
 
     public function findCodes($shoppingCart)

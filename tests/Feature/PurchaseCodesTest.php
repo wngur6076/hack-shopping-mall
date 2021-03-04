@@ -24,7 +24,9 @@ class PurchaseCodesTest extends TestCase
 
     private function orderCodes($product, $params)
     {
+        $savedRequest = $this->app['request'];
         $response = $this->json('POST', "/api/products/{$product->id}/orders", $params);
+        $this->app['request'] = $savedRequest;
 
         return $response;
     }
@@ -51,6 +53,7 @@ class PurchaseCodesTest extends TestCase
     /** @test */
     function customer_can_purchase_codes_to_a_product()
     {
+        $this->withoutExceptionHandling();
         // 유저를 만든다.
         $user = User::factory()->create(['email' => 'john@example.com', 'money' => 11000]);
         // 상품을 생성 한다.
@@ -69,6 +72,12 @@ class PurchaseCodesTest extends TestCase
 
         $response->assertStatus(201);
         $this->assertEquals(11000, $this->paymentGateway->totalCharges());
+
+        $response->assertJson([
+            'email' => 'john@example.com',
+            'code_quantity' => 5,
+            'amount' => 11000,
+        ]);
 
         // 증명하기
         $this->assertTrue($product->hasOrderFor('john@example.com'));
@@ -142,6 +151,40 @@ class PurchaseCodesTest extends TestCase
         $response->assertStatus(422);
         $this->assertFalse($product->hasOrderFor('john@example.com'));
         $this->assertEquals(7, $product->codesRemaining());
+    }
+
+    /** @test */
+    function cannot_purchase_codes_another_customer_is_already_trying_to_purchase()
+    {
+        User::factory()->create(['email' => 'personA@example.com']);
+        User::factory()->create(['email' => 'personB@example.com']);
+        $product = Product::factory()->create()->addCodes($this->sevenData());
+
+        $this->paymentGateway->beforeFirstCharge(function ($paymentGateway) use ($product) {
+            $response = $this->orderCodes($product, [
+                'email' => 'personB@example.com',
+                'shopping_cart' => [
+                    ['period' => 1, 'quantity' => 1],
+                ],
+                'payment_token' => $this->paymentGateway->getValidTestToken(),
+            ]);
+
+            $response->assertStatus(422);
+            $this->assertFalse($product->hasOrderFor('personB@example.com'));
+            $this->assertEquals(0, $this->paymentGateway->totalCharges());
+        });
+
+        $this->orderCodes($product, [
+            'email' => 'personA@example.com',
+            'shopping_cart' => [
+                ['period' => 1, 'quantity' => 2],
+            ],
+            'payment_token' => $this->paymentGateway->getValidTestToken(),
+        ]);
+
+        $this->assertEquals(2000, $this->paymentGateway->totalCharges());
+        $this->assertTrue($product->hasOrderFor('personA@example.com'));
+        $this->assertEquals(2, $product->ordersFor('personA@example.com')->first()->codeQuantity());
     }
 
     /** @test */

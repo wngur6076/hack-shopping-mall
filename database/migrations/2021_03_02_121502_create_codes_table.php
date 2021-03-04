@@ -17,6 +17,7 @@ class CreateCodesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('order_id')->nullable();
+            $table->dateTime('reserved_at')->nullable();
             $table->integer('period');
             $table->string('serial_number');
             $table->integer('price');

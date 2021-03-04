@@ -101,4 +101,19 @@ class ProductTest extends TestCase
 
         $this->fail('Order succeeded even though there were not enough codes remaining.');
     }
+
+    /** @test */
+    function can_reserve_available_codes()
+    {
+        $product = Product::factory()->create()->addCodes($this->sevenData());
+        $this->assertEquals(7, $product->codesRemaining());
+
+        $reservation = $product->reserveCodes([
+            ['period' => 1, 'quantity' => 2],
+        ], 'jane@example.com');
+
+        $this->assertCount(1, $reservation->codes());
+        $this->assertEquals('jane@example.com', $reservation->email());
+        $this->assertEquals(5, $product->codesRemaining());
+    }
 }
