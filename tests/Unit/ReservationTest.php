@@ -40,11 +40,19 @@ class ReservationTest extends TestCase
     /** @test */
     public function reserved_codes_are_released_when_a_reservation_is_cancelled()
     {
-        $codes = collect([
-            [Mockery::spy(Ticket::class), Mockery::spy(Ticket::class)],
-            [Mockery::spy(Ticket::class), Mockery::spy(Ticket::class)],
-            [Mockery::spy(Ticket::class)],
-        ]);
+        $codes = [
+            collect([
+                Mockery::spy(Ticket::class),
+                Mockery::spy(Ticket::class)
+            ]),
+            collect([
+                Mockery::spy(Ticket::class),
+                Mockery::spy(Ticket::class)
+            ]),
+            collect([
+                Mockery::spy(Ticket::class),
+            ]),
+        ];
 
         $reservation = new Reservation($codes, 'john@example.com');
 
@@ -60,11 +68,16 @@ class ReservationTest extends TestCase
     /** @test */
     function retrieving_the_reservations_tickets()
     {
-        $codes = collect([
-            (object) ['price' => 1200],
-            (object) ['price' => 1200],
-            (object) ['price' => 1200],
-        ]);
+        $codes = [
+            collect([
+                (object) ['price' => 1200],
+                (object) ['price' => 1200],
+            ]),
+            collect([
+                (object) ['price' => 1200],
+                (object) ['price' => 1200],
+            ])
+        ];
 
         $reservation = new Reservation($codes, 'john@example.com');
 

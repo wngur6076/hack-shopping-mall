@@ -49,9 +49,7 @@ class Product extends Model
         $codes = $this->findCodes($shoppingCart);
 
         foreach ($codes as $code) {
-            foreach ($code as $item) {
-                $item->reserve();
-            }
+            $code->each(function ($item) { $item->reserve(); });
         }
 
         return new Reservation($codes, $email);
@@ -71,19 +69,11 @@ class Product extends Model
         return $codes;
     }
 
-    public function totalCost($codes)
-    {
-        $amount = 0;
-        foreach ($codes as $code) {
-            $amount += $code->sum('price');
-        }
-
-        return $amount;
-    }
-
     public function createOrder($email, $codes)
     {
-        return Order::forTickets($codes, $email, $this->totalCost($codes));
+        $reservation = new Reservation($codes, $email);
+
+        return Order::forTickets($reservation->codes(), $reservation->email(), $reservation->totalCost());
     }
 
     public function addCodes($codes)

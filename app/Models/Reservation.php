@@ -43,9 +43,7 @@ class Reservation
     public function cancel()
     {
         foreach ($this->codes as $code) {
-            foreach ($code as $item) {
-                $item->release();
-            }
+            $code->each(function ($item) { $item->release(); });
         }
     }
 }
