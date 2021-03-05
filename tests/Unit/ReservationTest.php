@@ -89,8 +89,12 @@ class ReservationTest extends TestCase
                 Code::factory()->create(['period' => 1, 'price' => 1000, 'product_id' => $product->id]),
                 Code::factory()->create(['period' => 1, 'price' => 1000, 'product_id' => $product->id])
             ]),
-            collect([Code::factory()->create(['period' => 7, 'price' => 2000, 'product_id' => $product->id])]),
-            collect([Code::factory()->create(['period' => 15, 'price' => 3000, 'product_id' => $product->id])]),
+            collect([
+                Code::factory()->create(['period' => 7, 'price' => 2000, 'product_id' => $product->id])
+            ]),
+            collect([
+                Code::factory()->create(['period' => 15, 'price' => 3000, 'product_id' => $product->id])
+            ]),
         ];
 
         $reservation = new Reservation($codes, 'john@example.com');

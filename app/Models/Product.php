@@ -88,9 +88,7 @@ class Product extends Model
 
     public function addCodes($codes)
     {
-        foreach ($codes as $code) {
-            $this->codes()->create($code);
-        }
+        $this->codes()->createMany($codes);
 
         return $this;
     }
