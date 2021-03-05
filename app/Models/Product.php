@@ -32,16 +32,9 @@ class Product extends Model
         return $this->orders()->where('email', $customerEmail)->get();
     }
 
-    private function findCodeFor($period)
+    public function findCodeFor($period)
     {
         return $this->codes()->available()->period($period);
-    }
-
-    public function orderCodes($email, $shoppingCart)
-    {
-        $codes = $this->findCodes($shoppingCart);
-
-        return $this->createOrder($email, $codes);
     }
 
     public function reserveCodes($shoppingCart, $email)
@@ -67,13 +60,6 @@ class Product extends Model
         }
 
         return $codes;
-    }
-
-    public function createOrder($email, $codes)
-    {
-        $reservation = new Reservation($codes, $email);
-
-        return Order::forTickets($reservation->codes(), $reservation->email(), $reservation->totalCost());
     }
 
     public function addCodes($codes)

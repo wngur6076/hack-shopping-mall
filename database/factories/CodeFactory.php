@@ -30,4 +30,11 @@ class CodeFactory extends Factory
             'price' => 1000
         ];
     }
+
+    public function period($period)
+    {
+        return $this->state([
+            'period' => $period
+        ]);
+    }
 }
