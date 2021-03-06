@@ -20,7 +20,7 @@ class ProductsOrdersController extends Controller
 
     public function store(Product $product)
     {
-        $this->vadateRequest();
+        $this->validateRequest();
 
         try {
             // 코드 예약을 한다.
@@ -36,7 +36,7 @@ class ProductsOrdersController extends Controller
         }
     }
 
-    protected function vadateRequest()
+    protected function validateRequest()
     {
         $this->validate(request(), [
             'email' => ['required', 'email'],

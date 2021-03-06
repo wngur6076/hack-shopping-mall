@@ -19,6 +19,11 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
     public function codes()
     {
         return $this->hasMany(Code::class);
@@ -33,6 +38,17 @@ class Product extends Model
     {
         return $this->orders()->where('email', $customerEmail)->count() > 0;
     }
+
+    public function hasTagFor($tagName)
+    {
+        return $this->tags()->where('name', $tagName)->count() > 0;
+    }
+
+    public function hasCodeFor($codeSerialNumber)
+    {
+        return $this->codes()->where('serial_number', $codeSerialNumber)->count() > 0;
+    }
+
 
     public function ordersFor($customerEmail)
     {
@@ -69,6 +85,11 @@ class Product extends Model
         return $codes;
     }
 
+    public function codesRemaining()
+    {
+        return $this->codes()->available()->count();
+    }
+
     public function addCodes($codes)
     {
         $this->codes()->createMany($codes);
@@ -76,8 +97,10 @@ class Product extends Model
         return $this;
     }
 
-    public function codesRemaining()
+    public function addTags($tagsName)
     {
-        return $this->codes()->available()->count();
+        $this->tags()->sync(Tag::whereIn('name', $tagsName)->pluck('id'));
+
+        return $this;
     }
 }

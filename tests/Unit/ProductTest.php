@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Tag;
 use Tests\TestCase;
 use App\Models\Code;
 use App\Models\Order;
@@ -30,7 +31,6 @@ class ProductTest extends TestCase
     /** @test */
     function can_add_codes()
     {
-        $this->withoutExceptionHandling();
         $product = Product::factory()->create()->addCodes($this->sevenData());
 
         $this->assertEquals(7, $product->codesRemaining());
@@ -118,5 +118,20 @@ class ProductTest extends TestCase
         }
 
         $this->fail('Reserving codes succeeded even though the codes were already reserved.');
+    }
+
+    /** @test */
+    public function can_add_tags()
+    {
+        Tag::factory()->create(['name' => '서든어택', 'slug' => 'suddenattack']);
+        Tag::factory()->create(['name' => '메이플스토리', 'slug' => 'maplestory']);
+        Tag::factory()->create(['name' => '오버워치', 'slug' => 'overwatch']);
+
+        $product = Product::factory()->create()->addTags(['서든어택', '오버워치']);
+
+        $this->assertEquals(2, $product->tags()->count());
+        $this->assertTrue($product->hasTagFor('서든어택'));
+        $this->assertTrue($product->hasTagFor('오버워치'));
+        $this->assertFalse($product->hasTagFor('메이플스토리'));
     }
 }
