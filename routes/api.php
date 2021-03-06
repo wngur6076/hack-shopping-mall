@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductsOrdersController;
+use App\Http\Controllers\Backstage\ProductsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +16,8 @@ use App\Http\Controllers\ProductsOrdersController;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['middleware' => 'auth:api'], function() {
+    Route::post('/backstage/products', [ProductsController::class, 'store'])->middleware('isSeller');
 });
 
 Route::post('/products/{product}/orders', [ProductsOrdersController::class, 'store']);

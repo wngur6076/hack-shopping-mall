@@ -17,6 +17,9 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('title');
             $table->text('body');
+            $table->string('file_link');
+            $table->string('poster_video_path');
+            $table->unsignedBigInteger('user_id');
             $table->timestamps();
         });
     }
