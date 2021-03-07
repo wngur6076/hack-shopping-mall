@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Backstage;
 
-use App\Http\Controllers\Controller;
-use App\Models\Tag;
+use App\Models\NullFile;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class ProductsController extends Controller
@@ -16,11 +16,12 @@ class ProductsController extends Controller
         $product = Auth::user()->products()->create([
             'title' => request('title'),
             'body' => request('body'),
-            'poster_video_path' => request('poster_video_path'),
+            'poster_image_path' => request('poster_image', new NullFile)->store('posters', 'public'),
+            'poster_video_path' => request('poster_video', null),
             'file_link' => request('file_link'),
         ])->addCodes(request('codes'))->addTags(request('tags'));
 
-        return response()->json([], 201);
+        return response()->json($product, 201);
     }
 
     private function validateRequest()
@@ -28,6 +29,8 @@ class ProductsController extends Controller
         $this->validate(request(), [
             'title' => ['required'],
             'body' => ['required'],
+            'poster_image' => ['nullable', 'image'],
+            'poster_video' => ['nullable'],
             'file_link' => ['required'],
             'tags' => ['required'],
             'codes' => ['required'],
