@@ -13,8 +13,75 @@ class EditProductTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function oldAttributes($overrides = [])
+    {
+        return array_merge([
+            'title' => 'Old Title',
+            'body' => 'Old Body',
+            'poster_video_path' => 'https://www.youtube.com/old',
+            'file_link' => 'https://drive.google.com/file/old',
+        ], $overrides);
+    }
+
+
+    private function validParams($overrides = [])
+    {
+        return array_merge([
+            'title' => 'New Title',
+            'body' => 'New Body',
+            'poster_video' => 'https://www.youtube.com/New',
+            'file_link' => 'https://drive.google.com/file/New',
+            'codes' => [
+                ['id' => 1, 'period' => 7, 'serial_number' => 'New test7', 'price' => 5000],
+                ['period' => 15, 'serial_number' => 'New test15', 'price' => 13000],
+            ],
+            'tags' => ['메이플스토리'],
+        ], $overrides);
+    }
+
+    private function assertValidationError($response, $field)
+    {
+        $response->assertStatus(422)->assertJsonStructure(['errors' => [$field]]);
+    }
+
     /** @test */
-    function sellers_can_edit_their_own_product()
+    function buyers_cannot_update_product()
+    {
+        $user = User::factory()->buyer()->create();
+        $product = Product::factory()->create($this->oldAttributes([
+            'user_id' => $user->id,
+        ]));
+
+        $response = $this->actingAs($user, 'api')->json('PATCH',"api/backstage/products/{$product->id}", $this->validParams());
+
+        $response->assertStatus(403);
+
+        foreach ($this->oldAttributes(['user_id' => $user->id]) as $key => $value) {
+            $this->assertArrayHasKey($key, $product->getAttributes());
+            $this->assertSame($value, $product->getAttributes()[$key]);
+        }
+    }
+
+    /** @test */
+    function guests_cannot_edit_products()
+    {
+        $user = User::factory()->seller()->create();
+        $product = Product::factory()->create($this->oldAttributes([
+            'user_id' => $user->id,
+        ]));
+
+        $response = $this->json('PATCH',"api/backstage/products/{$product->id}", $this->validParams());
+
+        $response->assertStatus(401);
+
+        foreach ($this->oldAttributes(['user_id' => $user->id]) as $key => $value) {
+            $this->assertArrayHasKey($key, $product->getAttributes());
+            $this->assertSame($value, $product->getAttributes()[$key]);
+        }
+    }
+
+    /** @test */
+    function sellers_can_edit_their_own_products()
     {
         $this->withoutExceptionHandling();
 
@@ -22,7 +89,6 @@ class EditProductTest extends TestCase
         Tag::factory()->create(['name' => '서든어택', 'slug' => 'suddenattack']);
         Tag::factory()->create(['name' => '메이플스토리', 'slug' => 'maplestory']);
         Tag::factory()->create(['name' => '오버워치', 'slug' => 'overwatch']);
-
         $product = Product::factory()->create([
             'user_id' => $user->id,
             'title' => 'Old Title',
@@ -43,7 +109,7 @@ class EditProductTest extends TestCase
             'file_link' => 'https://drive.google.com/file/New',
             'codes' => [
                 ['id' => 1, 'period' => 7, 'serial_number' => 'New test7', 'price' => 5000],
-                ['id' => 2, 'period' => 15, 'serial_number' => 'New test15', 'price' => 13000],
+                ['period' => 15, 'serial_number' => 'New test15', 'price' => 13000],
             ],
             'tags' => ['메이플스토리'],
         ]);
@@ -77,5 +143,24 @@ class EditProductTest extends TestCase
             $this->assertFalse($product->hasTagFor('서든어택'));
             $this->assertFalse($product->hasTagFor('오버워치'));
         });
+    }
+
+    /** @test */
+    function sellers_cannot_edit_other_products()
+    {
+        $user = User::factory()->seller()->create();
+        $otherUser = User::factory()->seller()->create();
+        $product = Product::factory()->create($this->oldAttributes([
+            'user_id' => $otherUser->id,
+        ]));
+
+        $response = $this->actingAs($user, 'api')->json('PATCH',"api/backstage/products/{$product->id}", $this->validParams());
+
+        $response->assertStatus(404);
+
+        foreach ($this->oldAttributes(['user_id' => $otherUser->id]) as $key => $value) {
+            $this->assertArrayHasKey($key, $product->getAttributes());
+            $this->assertSame($value, $product->getAttributes()[$key]);
+        }
     }
 }
