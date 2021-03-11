@@ -64,15 +64,37 @@ class AddProductTest extends TestCase
         Tag::factory()->create(['name' => '메이플스토리', 'slug' => 'maplestory']);
         Tag::factory()->create(['name' => '오버워치', 'slug' => 'overwatch']);
 
-        $response = $this->actingAs($user, 'api')->json('POST','api/backstage/products', $this->validParams());
+        $response = $this->actingAs($user, 'api')->json('POST','api/backstage/products', [
+            'title' => 'Test',
+            'body' => 'Test Body',
+            'poster_video' => 'https://www.youtube.com/test',
+            'file_link' => 'https://drive.google.com/file/test',
+            'codes' => [
+                ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
+                ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+            ],
+            'tags' => ['서든어택', '오버워치'],
+        ]);
         $response->assertStatus(201);
+
+        $response->assertJson([
+            'title' => 'Test',
+            'excerpt' => 'Test Body',
+            'poster_video' => '//www.youtube.com/embed/test',
+            'file_link' => 'https://drive.google.com/file/test',
+            'tags' => [
+                ['name' => '서든어택', 'slug' => 'suddenattack'],
+                ['name' => '오버워치', 'slug' => 'overwatch'],
+            ],
+            'codes' => [
+                ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
+                ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+            ]
+        ]);
 
         tap(Product::first(), function ($product) use ($user) {
             $this->assertTrue($product->user->is($user));
-            $this->assertEquals('Test', $product->title);
-            $this->assertEquals('Test Body', $product->body);
-            $this->assertEquals('https://www.youtube.com/test', $product->poster_video_path);
-            $this->assertEquals('https://drive.google.com/file/test', $product->file_link);
+            $this->assertEquals(1, $product->count());
             $this->assertTrue($product->hasCodeFor('test1'));
             $this->assertTrue($product->hasCodeFor('test7'));
             $this->assertTrue($product->hasTagFor('서든어택'));

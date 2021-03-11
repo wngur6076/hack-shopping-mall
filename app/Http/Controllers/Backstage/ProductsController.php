@@ -21,7 +21,18 @@ class ProductsController extends Controller
             'file_link' => request('file_link'),
         ])->addCodes(request('codes'))->addTags(request('tags'));
 
-        return response()->json($product, 201);
+        return response()->json([
+            'id' => $product->id,
+            'title' => $product->title,
+            'excerpt' => $product->body,
+            'poster_image' => \Storage::disk('public')->url($product->poster_image_path),
+            'poster_video' => $product->poster_video_url,
+            'file_link' => $product->file_link,
+            'created_date' => $product->created_at->diffForHumans(),
+            'user' => $product->user,
+            'tags' => $product->tags,
+            'codes' => $product->codes,
+        ], 201);
     }
 
     private function validateRequest()

@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use App\Models\Reservation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use App\Exceptions\NotEnoughCodesException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -102,5 +103,17 @@ class Product extends Model
         $this->tags()->sync(Tag::whereIn('name', $tagsName)->pluck('id'));
 
         return $this;
+    }
+
+    public function getPosterVideoUrlAttribute()
+    {
+        if (!strpos($this->poster_video_path, '//www.youtube.com/')) return null;
+
+        return '//www.youtube.com/embed/' . explode('/', $this->poster_video_path)[3];
+    }
+
+    public function getPosterImageUrlAttribute()
+    {
+        return Storage::disk('public')->url($this->poster_image_path);
     }
 }

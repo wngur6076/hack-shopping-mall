@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Carbon\Carbon;
 use App\Models\Tag;
 use Tests\TestCase;
 use App\Models\Code;
@@ -26,6 +27,26 @@ class ProductTest extends TestCase
             ['period' => 30, 'serial_number' => 'test30', 'price' => 4000],
             ['period' => 999, 'serial_number' => 'test999', 'price' => 5000],
         ];
+    }
+
+    /** @test */
+    function can_get_poster_video_url()
+    {
+        $product = Product::factory()->make([
+            'poster_video_path' => 'https://www.youtube.com/test'
+        ]);
+
+        $this->assertEquals('//www.youtube.com/embed/test', $product->poster_video_url);
+    }
+
+    /** @test */
+    function can_get_poster_image_url()
+    {
+        $product = Product::factory()->make([
+            'poster_image_path' => 'posters/test.png'
+        ]);
+
+        $this->assertEquals(config("app.url").'/storage/posters/test.png', $product->poster_image_url);
     }
 
     /** @test */
