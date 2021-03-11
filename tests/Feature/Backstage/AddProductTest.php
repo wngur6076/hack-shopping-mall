@@ -78,18 +78,21 @@ class AddProductTest extends TestCase
         ]);
         $response->assertStatus(201);
 
+        $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
         $response->assertJson([
-            'title' => 'Test',
-            'excerpt' => 'Test Body',
-            'poster_video' => '//www.youtube.com/embed/test',
-            'file_link' => 'https://drive.google.com/file/test',
-            'tags' => [
-                ['name' => '서든어택', 'slug' => 'suddenattack'],
-                ['name' => '오버워치', 'slug' => 'overwatch'],
-            ],
-            'codes' => [
-                ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
-                ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+            'data' => [
+                'title' => 'Test',
+                'excerpt' => strip_tags($markdown->convertToHtml('Test Body'), 200),
+                'poster_video' => '//www.youtube.com/embed/test',
+                'file_link' => 'https://drive.google.com/file/test',
+                'tags' => [
+                    ['name' => '서든어택', 'slug' => 'suddenattack'],
+                    ['name' => '오버워치', 'slug' => 'overwatch'],
+                ],
+                'codes' => [
+                    ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
+                    ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+                ]
             ]
         ]);
 

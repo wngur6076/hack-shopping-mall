@@ -49,7 +49,24 @@ class EditProductTest extends TestCase
         ]);
         $response->assertStatus(200);
 
-        tap(Product::first(), function ($product) {
+        $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
+        $response->assertJson([
+            'data' => [
+                'title' => 'New Title',
+                'excerpt' => strip_tags($markdown->convertToHtml('New Body'), 200),
+                'poster_video' => '//www.youtube.com/embed/New',
+                'file_link' => 'https://drive.google.com/file/New',
+                'tags' => [
+                    ['name' => '메이플스토리', 'slug' => 'maplestory'],
+                ],
+                'codes' => [
+                    ['period' => 7, 'serial_number' => 'New test7', 'price' => 5000],
+                    ['period' => 15, 'serial_number' => 'New test15', 'price' => 13000],
+                ]
+            ]
+        ]);
+
+        tap($product->fresh(), function ($product) {
             $this->assertEquals('New Title', $product->title);
             $this->assertEquals('New Body', $product->body);
             $this->assertEquals('https://www.youtube.com/New', $product->poster_video_path);

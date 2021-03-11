@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 use App\Models\Reservation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -49,7 +49,6 @@ class Product extends Model
     {
         return $this->codes()->where('serial_number', $codeSerialNumber)->count() > 0;
     }
-
 
     public function ordersFor($customerEmail)
     {
@@ -130,6 +129,28 @@ class Product extends Model
         return $this;
     }
 
+    public function excerpt($length)
+    {
+        return Str::limit(strip_tags($this->bodyhtml()), $length);
+    }
+
+    private function bodyhtml()
+    {
+        $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
+
+        return $markdown->convertToHtml($this->body);
+    }
+
+    public function getBodyHtmlAttribute()
+    {
+        return clean($this->bodyhtml());
+    }
+
+    public function getExcerptAttribute()
+    {
+        return $this->excerpt(200);
+    }
+
     public function getPosterVideoUrlAttribute()
     {
         if (!strpos($this->poster_video_path, '//www.youtube.com/')) return null;
@@ -141,4 +162,10 @@ class Product extends Model
     {
         return Storage::disk('public')->url($this->poster_image_path);
     }
+
+    public function getCreatedDateAttribute()
+    {
+        return $this->created_at->diffForHumans();
+    }
+
 }

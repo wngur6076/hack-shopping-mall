@@ -50,6 +50,30 @@ class ProductTest extends TestCase
     }
 
     /** @test */
+    function can_get_created_date()
+    {
+        $product = Product::factory()->make([
+            'created_at' => Carbon::parse('-1 week')
+        ]);
+        $this->assertEquals('1 week ago', $product->created_date);
+    }
+
+    /** @test */
+    function can_get_excerpt()
+    {
+        $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
+        $product = Product::factory()->make([
+            'body' => 'test'
+        ]);
+        $this->assertEquals(strip_tags($markdown->convertToHtml('test'), 5), $product->excerpt(5));
+
+        $product = Product::factory()->make([
+            'body' => 'test1'
+        ]);
+        $this->assertEquals('test1...', $product->excerpt(5));
+    }
+
+    /** @test */
     function can_add_codes()
     {
         $product = Product::factory()->create()->addCodes($this->sevenData());
