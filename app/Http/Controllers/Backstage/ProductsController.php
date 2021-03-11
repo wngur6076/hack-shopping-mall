@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Backstage;
 
+use App\Models\Code;
+use App\Models\Product;
 use App\Models\NullFile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -19,13 +21,13 @@ class ProductsController extends Controller
             'poster_image_path' => request('poster_image', new NullFile)->store('posters', 'public'),
             'poster_video_path' => request('poster_video', null),
             'file_link' => request('file_link'),
-        ])->addCodes(request('codes'))->addTags(request('tags'));
+        ])->addCodes(request('codes'))->syncTags(request('tags'));
 
         return response()->json([
             'id' => $product->id,
             'title' => $product->title,
             'excerpt' => $product->body,
-            'poster_image' => \Storage::disk('public')->url($product->poster_image_path),
+            'poster_image' => $product->poster_image_url,
             'poster_video' => $product->poster_video_url,
             'file_link' => $product->file_link,
             'created_date' => $product->created_at->diffForHumans(),
@@ -33,6 +35,23 @@ class ProductsController extends Controller
             'tags' => $product->tags,
             'codes' => $product->codes,
         ], 201);
+    }
+
+    public function update($id)
+    {
+        $product = Auth::user()->products()->findOrFail($id);
+        $this->validateRequest();
+
+        $product->update([
+            'title' => request('title'),
+            'body' => request('body'),
+            'poster_image_path' => request('poster_image', new NullFile)->store('posters', 'public'),
+            'poster_video_path' => request('poster_video', null),
+            'file_link' => request('file_link'),
+        ]);
+        $product->updateCodes(request('codes'))->syncTags(request('tags'));
+
+        return response()->json([], 200);
     }
 
     private function validateRequest()

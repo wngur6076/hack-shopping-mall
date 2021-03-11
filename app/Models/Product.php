@@ -56,6 +56,11 @@ class Product extends Model
         return $this->orders()->where('email', $customerEmail)->get();
     }
 
+    public function codeFor($codeSerialNumber)
+    {
+        return $this->codes()->where('serial_number', $codeSerialNumber)->get();
+    }
+
     public function findCodeFor($period)
     {
         return $this->codes()->available()->period($period);
@@ -98,7 +103,27 @@ class Product extends Model
         return $this;
     }
 
-    public function addTags($tagsName)
+    public function updateCodes($codes)
+    {
+        foreach ($codes as $code) {
+            if (isset($code['id'])) {
+                Code::whereId($code['id'])->where('product_id', $this->id)->update($code);
+                $oldCodeIds[] = $code['id'];
+            } else {
+                $newCodes[] = new Code($code);
+            }
+        }
+
+        Code::where('product_id', $this->id)->whereNotIn('id', isset($oldCodeIds) ? $oldCodeIds : [])->delete();
+
+        if (isset($newCodes)) {
+            $this->codes()->saveMany($newCodes);
+        }
+
+        return $this;
+    }
+
+    public function syncTags($tagsName)
     {
         $this->tags()->sync(Tag::whereIn('name', $tagsName)->pluck('id'));
 

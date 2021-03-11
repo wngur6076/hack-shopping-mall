@@ -142,17 +142,43 @@ class ProductTest extends TestCase
     }
 
     /** @test */
-    public function can_add_tags()
+    function can_sync_tags()
     {
         Tag::factory()->create(['name' => '서든어택', 'slug' => 'suddenattack']);
         Tag::factory()->create(['name' => '메이플스토리', 'slug' => 'maplestory']);
         Tag::factory()->create(['name' => '오버워치', 'slug' => 'overwatch']);
 
-        $product = Product::factory()->create()->addTags(['서든어택', '오버워치']);
+        $product = Product::factory()->create()->syncTags(['서든어택', '오버워치']);
 
-        $this->assertEquals(2, $product->tags()->count());
+        $this->assertCount(2, $product->tags);
         $this->assertTrue($product->hasTagFor('서든어택'));
         $this->assertTrue($product->hasTagFor('오버워치'));
         $this->assertFalse($product->hasTagFor('메이플스토리'));
+    }
+
+    /** @test */
+    function can_update_codes()
+    {
+        $product = Product::factory()->create()->addCodes([
+            ['period' => 1, 'serial_number' => 'Old test1', 'price' => 1000],
+            ['period' => 7, 'serial_number' => 'Old test7', 'price' => 2000],
+        ]);
+
+        $product->updateCodes([
+            ['id' => 1, 'period' => 7, 'serial_number' => 'New test7', 'price' => 5000],
+            ['id' => 2, 'period' => 15, 'serial_number' => 'New test15', 'price' => 13000],
+            ['period' => 30, 'serial_number' => 'New test30', 'price' => 25000],
+        ]);
+
+        $this->assertCount(3, $product->codes);
+        $this->assertEquals(1, $product->codeFor('New test7')->first()->id);
+        $this->assertEquals(2, $product->codeFor('New test15')->first()->id);
+        $this->assertEquals(3, $product->codeFor('New test30')->first()->id);
+
+        $product->updateCodes([
+            ['period' => 1, 'serial_number' => 'New test1', 'price' => 1500],
+        ]);
+        $this->assertCount(1, $product->fresh()->codes);
+        $this->assertEquals(4, $product->codeFor('New test1')->first()->id);
     }
 }
