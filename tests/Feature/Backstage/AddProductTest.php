@@ -285,7 +285,7 @@ class AddProductTest extends TestCase
             'poster_image' => null,
         ]));
 
-        tap(Product::first(), function ($product) use ($response, $user) {
+        tap(Product::first(), function ($product) use ($user) {
             $this->assertTrue($product->user->is($user));
 
             $this->assertNull($product->poster_image_path);

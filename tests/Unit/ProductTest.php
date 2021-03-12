@@ -8,6 +8,8 @@ use Tests\TestCase;
 use App\Models\Code;
 use App\Models\Order;
 use App\Models\Product;
+use Illuminate\Http\Testing\File;
+use Illuminate\Support\Facades\Storage;
 use App\Exceptions\NotEnoughCodesException;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -204,5 +206,30 @@ class ProductTest extends TestCase
         ]);
         $this->assertCount(1, $product->fresh()->codes);
         $this->assertEquals(4, $product->codeFor('New test1')->first()->id);
+    }
+
+    /** @test */
+    function can_delete_poster_image()
+    {
+        $product = Product::factory()->create([
+            'poster_image_path' => File::image('product-poster.png', 325, 200)->store('posters', 'public'),
+        ]);
+
+        $status = $product->deletePosterImage();
+
+        $this->assertTrue($status);
+        Storage::disk('public')->assertMissing($product->poster_image_path);
+    }
+
+    /** @test */
+    function image_file_does_not_exist_cannot_delete_the_poster_image()
+    {
+        $product = Product::factory()->create([
+            'poster_image_path' => 'posters/product-poster.png',
+        ]);
+
+        $status = $product->deletePosterImage();
+
+        $this->assertFalse($status);
     }
 }

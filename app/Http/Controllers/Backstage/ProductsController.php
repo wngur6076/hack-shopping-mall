@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
 {
@@ -34,11 +35,15 @@ class ProductsController extends Controller
         $product = Auth::user()->products()->findOrFail($id);
         $this->validateRequest();
 
+        if (request()->hasFile('poster_image')) {
+            $product->deletePosterImage();
+            $product->update(['poster_image_path' => request('poster_image')->store('posters', 'public')]);
+        }
+
         $product->updateCodes(request('codes'))->syncTags(request('tags'))
         ->update([
             'title' => request('title'),
             'body' => request('body'),
-            'poster_image_path' => request('poster_image', new NullFile)->store('posters', 'public'),
             'poster_video_path' => request('poster_video', null),
             'file_link' => request('file_link'),
         ]);

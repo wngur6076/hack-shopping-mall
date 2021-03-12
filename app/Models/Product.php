@@ -122,6 +122,15 @@ class Product extends Model
         return $this;
     }
 
+    public function deletePosterImage()
+    {
+        if ($this->poster_image_path && Storage::disk('public')->exists($this->poster_image_path)) {
+            Storage::disk('public')->delete($this->poster_image_path);
+            return true;
+        }
+        return false;
+    }
+
     public function syncTags($tagsName)
     {
         $this->tags()->sync(Tag::whereIn('name', $tagsName)->pluck('id'));
