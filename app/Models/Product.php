@@ -122,6 +122,13 @@ class Product extends Model
         return $this;
     }
 
+    public function deleteCodes()
+    {
+        $this->codes()->available()->delete();
+
+        return $this;
+    }
+
     public function deletePosterImage()
     {
         if ($this->poster_image_path && Storage::disk('public')->exists($this->poster_image_path)) {

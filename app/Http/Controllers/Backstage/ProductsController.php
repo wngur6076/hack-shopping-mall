@@ -64,6 +64,16 @@ class ProductsController extends Controller
         ], 200);
     }
 
+    public function destroy($id)
+    {
+        $product = Auth::user()->products()->findOrFail($id);
+
+        $product->deletePosterImage();
+        $product->syncTags([])->deleteCodes()->delete();
+
+        return response()->json([], 204);
+    }
+
     private function validateRequest()
     {
         $this->validate(request(), [

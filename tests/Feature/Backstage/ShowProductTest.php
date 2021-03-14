@@ -6,6 +6,7 @@ use App\Models\Tag;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Product;
+use Illuminate\Http\Testing\File;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -25,9 +26,12 @@ class ShowProductTest extends TestCase
             'user_id' => $user->id,
             'title' => 'Test Title',
             'body' => 'Test Body',
+            'poster_image_path' => File::image('old-product-poster.png', 325, 200)->store('posters', 'public'),
             'poster_video_path' => 'https://www.youtube.com/test',
             'file_link' => 'https://drive.google.com/file/test',
         ]);
+        $posterImagePath = $product->poster_image_path;
+
         $product->syncTags(['서든어택', '오버워치']);
         $product->addCodes([
             ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
@@ -43,6 +47,7 @@ class ShowProductTest extends TestCase
                 'title' => 'Test Title',
                 'body_html' => clean($markdown->convertToHtml('<p>Test Body</p>')),
                 'body' => 'Test Body',
+                'poster_image' => config("app.url").'/storage/'.$posterImagePath,
                 'poster_video' => '//www.youtube.com/embed/test',
                 'file_link' => 'https://drive.google.com/file/test',
                 'tags' => [

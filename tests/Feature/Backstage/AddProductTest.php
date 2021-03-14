@@ -98,7 +98,7 @@ class AddProductTest extends TestCase
 
         tap(Product::first(), function ($product) use ($user) {
             $this->assertTrue($product->user->is($user));
-            $this->assertEquals(1, $product->count());
+            $this->assertDatabaseCount('products', 1);
             $this->assertTrue($product->hasCodeFor('test1'));
             $this->assertTrue($product->hasCodeFor('test7'));
             $this->assertTrue($product->hasTagFor('서든어택'));

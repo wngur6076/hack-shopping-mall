@@ -219,6 +219,37 @@ class ProductTest extends TestCase
     }
 
     /** @test */
+    function can_delete_codes()
+    {
+        $product = Product::factory()->create()->addCodes([
+            ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
+            ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+        ]);
+        $this->assertCount(2, $product->codes);
+
+        $product->deleteCodes();
+
+        $this->assertCount(0, $product->fresh()->codes);
+    }
+
+    /** @test */
+    function purchased_codes_cannot_be_deleted()
+    {
+        $product = Product::factory()->create()->addCodes([
+            ['period' => 1, 'serial_number' => 'test1', 'price' => 1000],
+            ['period' => 7, 'serial_number' => 'test7', 'price' => 2000],
+        ]);
+        $order = Order::factory()->create();
+        $order->codes()->save($product->findCodeFor(1)->take(1)->first());
+        $order->codes()->save($product->findCodeFor(7)->take(1)->first());
+        $this->assertCount(2, $product->codes);
+
+        $product->deleteCodes();
+
+        $this->assertCount(2, $product->fresh()->codes);
+    }
+
+    /** @test */
     function can_delete_poster_image()
     {
         $product = Product::factory()->create([
