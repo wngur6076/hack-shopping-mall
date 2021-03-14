@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Backstage;
 
+use App\Models\Product;
 use App\Models\NullFile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProductResource;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\ProductDetailsResource;
 
 class ProductsController extends Controller
 {
@@ -28,6 +29,14 @@ class ProductsController extends Controller
             'message' => '게시글이 등록되었습니다.',
             'data' => new ProductResource($product),
         ], 201);
+    }
+
+    public function show(Product $product)
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => new ProductDetailsResource($product),
+        ], 200);
     }
 
     public function update($id)

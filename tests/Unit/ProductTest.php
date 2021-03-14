@@ -76,6 +76,16 @@ class ProductTest extends TestCase
     }
 
     /** @test */
+    function can_get_body_html()
+    {
+        $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
+        $product = Product::factory()->make([
+            'body' => 'test'
+        ]);
+        $this->assertEquals(clean($markdown->convertToHtml('<p>test</p>')), $product->body_html);
+    }
+
+    /** @test */
     function can_add_codes()
     {
         $product = Product::factory()->create()->addCodes($this->sevenData());
