@@ -51,7 +51,7 @@ class DeleteProductTest extends TestCase
     }
 
     /** @test */
-    public function sellers_can_delete_their_own_products()
+    function sellers_can_delete_their_own_products()
     {
         $this->withoutExceptionHandling();
 

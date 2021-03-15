@@ -17,6 +17,8 @@ use App\Http\Controllers\Backstage\ProductsController;
 */
 
 Route::group(['middleware' => 'auth:api'], function() {
+    Route::get('/backstage/products', [ProductsController::class, 'index']);
+    Route::get('/backstage/tags/{slug}/products', [ProductsController::class, 'index']);
     Route::post('/backstage/products', [ProductsController::class, 'store'])->middleware('isSeller');
     Route::get('/backstage/products/{product}', [ProductsController::class, 'show']);
     Route::patch('/backstage/products/{id}', [ProductsController::class, 'update'])->middleware('isSeller');

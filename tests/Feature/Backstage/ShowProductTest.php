@@ -15,9 +15,8 @@ class ShowProductTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function user_can_view_their_product()
+    function user_can_view_their_product()
     {
-        $this->withoutExceptionHandling();
         $markdown = new \League\CommonMark\CommonMarkConverter(['allow_unsafe_links' => false]);
         $user = User::factory()->create();
         Tag::factory()->create(['name' => '서든어택', 'slug' => 'suddenattack']);

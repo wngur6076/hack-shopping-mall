@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backstage;
 
+use App\Models\Tag;
 use App\Models\Product;
 use App\Models\NullFile;
 use Illuminate\Http\Request;
@@ -12,6 +13,15 @@ use App\Http\Resources\ProductDetailsResource;
 
 class ProductsController extends Controller
 {
+    public function index($slug = null)
+    {
+        $query = $slug
+            ? Tag::findBySlug($slug)->products()
+            : new Product;
+
+        return ProductResource::collection($query->Paginate(4));
+    }
+
     public function store()
     {
         $this->validateRequest();
