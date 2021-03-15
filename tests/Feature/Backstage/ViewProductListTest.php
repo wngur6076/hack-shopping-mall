@@ -81,4 +81,25 @@ class ViewProductListTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    /** @test */
+    function pagination_for_products_works()
+    {
+        for ($i = 0; $i < 4; $i++) {
+            Product::factory()->create(['title' => 'Product '.$i]);
+        }
+
+        for ($i = 4; $i < 8; $i++) {
+            Product::factory()->create(['title' => 'Product '.$i]);
+        }
+        $response = $this->actingAs(User::factory()->create(), 'api')->json('GET', '/api/backstage/products');
+
+        $response->assertJsonFragment(['title' => 'Product 0']);
+        $response->assertJsonFragment(['title' => 'Product 3']);
+
+        $response = $this->actingAs(User::factory()->create(), 'api')->json('GET', '/api/backstage/products?page=2');
+
+        $response->assertJsonFragment(['title' => 'Product 4']);
+        $response->assertJsonFragment(['title' => 'Product 7']);
+    }
 }

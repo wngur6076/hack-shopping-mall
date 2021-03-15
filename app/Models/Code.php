@@ -27,11 +27,6 @@ class Code extends Model
         return $query->where('period', $period);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
     public function release()
     {
         $this->update(['reserved_at' => null]);
