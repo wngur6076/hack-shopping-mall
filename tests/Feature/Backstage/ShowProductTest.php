@@ -25,7 +25,7 @@ class ShowProductTest extends TestCase
             'user_id' => $user->id,
             'title' => 'Test Title',
             'body' => 'Test Body',
-            'poster_image_path' => File::image('old-product-poster.png', 325, 200)->store('posters', 'public'),
+            'poster_image_path' => File::image('product-poster.png', 325, 200)->store('posters', 'public'),
             'poster_video_path' => 'https://www.youtube.com/test',
             'file_link' => 'https://drive.google.com/file/test',
         ]);
